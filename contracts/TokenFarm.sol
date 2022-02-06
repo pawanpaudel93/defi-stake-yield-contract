@@ -12,8 +12,6 @@ contract TokenFarm is Ownable {
     // addAllowedTokens - DONE
     // getValue - DONE
 
-    // mapping(address => bool) public allowedTokens;
-
     address[] public allowedTokens;
     // mapping token address => staker address => amount
     mapping(address => mapping(address => uint256)) public stakingBalance;
@@ -110,7 +108,22 @@ contract TokenFarm is Ownable {
         stakingBalance[_token][msg.sender] = 0;
         uniqueTokensStaked[msg.sender] -= 1;
 
-        // remove from stakers if they have no more tokens TODO
+        // remove from stakers if they have no more tokens
+        if (uniqueTokensStaked[msg.sender] == 0) {
+            for (
+                uint256 stakerIndex = 0;
+                stakerIndex < stakers.length;
+                stakerIndex++
+            ) {
+                if (stakers[stakerIndex] == msg.sender) {
+                    address lastAddress = stakers[stakers.length - 1];
+                    stakers[stakers.length - 1] = stakers[stakerIndex];
+                    stakers[stakerIndex] = lastAddress;
+                    break;
+                }
+            }
+            stakers.pop();
+        }
     }
 
     function updateUniqueTokensStaked(address _user, address _token) internal {
@@ -119,21 +132,9 @@ contract TokenFarm is Ownable {
         }
     }
 
-    // function addAllowedTokens(address _token) public onlyOwner {
-    //     require(allowedTokens[_token] == false, "Token is already allowed");
-    //     allowedTokens[_token] = true;
-    // }
-
     function addAllowedTokens(address _token) public onlyOwner {
         allowedTokens.push(_token);
     }
-
-    // function tokenIsAllowed(address _token) public returns (bool) {
-    //     if (allowedTokens[_token]) {
-    //         return true;
-    //     }
-    //     return false;
-    // }
 
     function tokenIsAllowed(address _token) public view returns (bool) {
         for (

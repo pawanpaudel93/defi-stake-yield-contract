@@ -81,6 +81,8 @@ def test_unstake_tokens(amount_staked):
     token_farm.unstakeTokens(dapp_token.address, {"from": account})
     # Assert
     assert dapp_token.balanceOf(account.address) == starting_balance + amount_staked
+    with pytest.raises(exceptions.VirtualMachineError):
+        assert token_farm.stakers(0) == account
 
 
 def test_token_value():
